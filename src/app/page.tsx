@@ -1,69 +1,174 @@
-import Image from "next/image";
+"use client";
+
+import Link from "next/link";
+import { useState } from "react";
+import { act, useApi } from "@/lib/client";
+import type { Overview } from "@/lib/types";
+import { ActionButton, Card, Divided, ErrorNote, LinkRow, Loading, Page, Pill, Progress, SectionTitle } from "@/components/ui";
+import { PauseIcon, PlayIcon } from "@/components/icons";
 
 export default function Home() {
+  const { data, error, mutate } = useApi<Overview>("/api/overview", { refreshInterval: 10000 });
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <Page title="Arrboard">
+      {!data && error && <ErrorNote error={error} retry={() => mutate()} />}
+      {!data && !error && <Loading rows={4} />}
+      {data && (
+        <>
+          {data.errors.length > 0 && (
+            <Card className="space-y-1 p-4 text-sm text-[var(--bad)]">
+              {data.errors.map((e) => <p key={e}>{e}</p>)}
+            </Card>
+          )}
+
+          <Downloads d={data.downloads} refresh={() => mutate()} />
+
+          {data.issues.length > 0 && <Issues issues={data.issues} refresh={() => mutate()} />}
+
+          <Card>
+            <Divided>
+              <LinkRow href="/requests" badge={data.requests?.pending ? <Pill tone="warn">{data.requests.pending} pending</Pill> : undefined}>
+                <p className="font-medium">Requests</p>
+                <p className="text-sm text-[var(--muted)]">
+                  {data.requests ? `${data.requests.pending} waiting for approval · ${data.requests.processing} processing` : "Seerr unavailable"}
+                </p>
+              </LinkRow>
+              <LinkRow href="/subtitles">
+                <p className="font-medium">Missing subtitles</p>
+                <p className="text-sm text-[var(--muted)]">
+                  {data.subtitles ? `${data.subtitles.episodes.toLocaleString()} episodes · ${data.subtitles.movies.toLocaleString()} movies` : "Bazarr unavailable"}
+                </p>
+              </LinkRow>
+            </Divided>
+          </Card>
+
+          <div className="grid grid-cols-3 gap-2">
+            {([["shows", "Shows"], ["movies", "Movies"], ["music", "Artists"]] as const).map(([k, label]) => (
+              <Link key={k} href={`/library/${k}`} className="rounded-2xl bg-[var(--card)] p-3 active:bg-[var(--press)]">
+                <p className="text-2xl font-bold">{data.counts[k]?.toLocaleString() ?? "—"}</p>
+                <p className="text-sm text-[var(--muted)]">{label}</p>
+              </Link>
+            ))}
+          </div>
+
+          <Health items={data.health} />
+        </>
+      )}
+    </Page>
+  );
+}
+
+function Downloads({ d, refresh }: { d: Overview["downloads"]; refresh: () => void }) {
+  if (!d) return <ErrorNote error="SABnzbd unavailable" />;
+  return (
+    <Card className="p-4">
+      <div className="flex items-start gap-3">
+        <Link href="/downloads" className="min-w-0 flex-1">
+          <p className="text-sm text-[var(--muted)]">Downloads</p>
+          <p className="text-xl font-bold">
+            {d.paused ? "Paused" : d.count ? d.speed : "Idle"}
           </p>
+          <p className="text-sm text-[var(--muted)]">
+            {d.count ? `${d.count} in queue · ${d.timeleft} left` : "Queue empty"} · {d.diskFree}
+          </p>
+        </Link>
+        <ActionButton
+          tone={d.paused ? "primary" : "plain"}
+          run={async () => {
+            await act("/api/downloads", { action: d.paused ? "resumeAll" : "pauseAll" });
+            refresh();
+          }}
+          done={d.paused ? "Resumed" : "Paused"}
+        >
+          {d.paused ? <><PlayIcon className="h-4 w-4" /> Resume</> : <><PauseIcon className="h-4 w-4" /> Pause</>}
+        </ActionButton>
+      </div>
+      {d.top && (
+        <div className="mt-3 space-y-1.5">
+          <p className="truncate text-sm">{d.top.name}</p>
+          <Progress percent={d.top.percent} />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      )}
+    </Card>
+  );
+}
+
+function Issues({ issues, refresh }: { issues: Overview["issues"]; refresh: () => void }) {
+  const [all, setAll] = useState(false);
+  const shown = all ? issues : issues.slice(0, 3);
+  return (
+    <>
+      <SectionTitle right={<Pill tone="warn">{issues.length}</Pill>}>Needs attention</SectionTitle>
+      <Card>
+        <Divided>
+          {shown.map((i) => (
+            <div key={`${i.service}${i.id}`} className="space-y-2 p-4">
+              <div className="flex items-center gap-2">
+                <Pill tone="warn">{i.service}</Pill>
+                <span className="text-xs text-[var(--muted)]">{i.state}</span>
+              </div>
+              <p className="break-all text-sm font-medium">{i.title}</p>
+              {i.messages.slice(0, 3).map((m, n) => <p key={n} className="text-sm text-[var(--muted)]">{m}</p>)}
+              {i.messages.length > 3 && <p className="text-xs text-[var(--muted)]">+{i.messages.length - 3} more</p>}
+              <div className="flex gap-2 pt-1">
+                <ActionButton
+                  confirm="Tap to remove"
+                  run={async () => {
+                    await act("/api/queue", { service: i.service, id: i.id, blocklist: false });
+                    refresh();
+                  }}
+                  done="Removed from queue"
+                >
+                  Remove
+                </ActionButton>
+                <ActionButton
+                  confirm="Tap to blocklist"
+                  run={async () => {
+                    await act("/api/queue", { service: i.service, id: i.id, blocklist: true });
+                    refresh();
+                  }}
+                  done="Blocklisted, searching again"
+                >
+                  Blocklist + search
+                </ActionButton>
+              </div>
+            </div>
+          ))}
+        </Divided>
+        {issues.length > shown.length && (
+          <button onClick={() => setAll(true)} className="w-full border-t border-[var(--line)] py-3 text-sm font-semibold text-[var(--accent)]">
+            Show all {issues.length}
+          </button>
+        )}
+      </Card>
+    </>
+  );
+}
+
+function Health({ items }: { items: Overview["health"] }) {
+  const [open, setOpen] = useState(false);
+  if (!items.length) return null;
+  const errors = items.filter((h) => h.type === "error").length;
+  return (
+    <Card>
+      <button onClick={() => setOpen(!open)} className="flex min-h-12 w-full items-center gap-3 px-4 py-3 text-left">
+        <span className="flex-1 font-medium">Health checks</span>
+        <Pill tone={errors ? "bad" : "warn"}>{items.length} {items.length === 1 ? "notice" : "notices"}</Pill>
+        <span className="text-sm text-[var(--accent)]">{open ? "Hide" : "Show"}</span>
+      </button>
+      {open && (
+        <Divided>
+          {items.map((h, i) => (
+            <div key={i} className="space-y-1 px-4 py-3">
+              <div className="flex gap-2">
+                <Pill tone={h.type === "error" ? "bad" : "warn"}>{h.service}</Pill>
+              </div>
+              <p className="text-sm text-[var(--muted)]">{h.message}</p>
+            </div>
+          ))}
+        </Divided>
+      )}
+    </Card>
   );
 }

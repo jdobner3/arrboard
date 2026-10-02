@@ -1,26 +1,57 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --bg: #f2f3f7;
+  --card: #ffffff;
+  --press: #e6e8ee;
+  --line: #e2e4ea;
+  --fg: #11131a;
+  --muted: #6b7180;
+  --accent: #2f6fdf;
+  --good: #16a34a;
+  --warn: #c26a04;
+  --bad: #dc2626;
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg: #0b0d12;
+    --card: #161922;
+    --press: #232734;
+    --line: #232734;
+    --fg: #eef0f5;
+    --muted: #8b91a1;
+    --accent: #5b9cff;
+    --good: #34d399;
+    --warn: #fbbf24;
+    --bad: #f87171;
+    color-scheme: dark;
   }
 }
 
+html {
+  background: var(--bg);
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+/* iOS zooms the page when focusing an input under 16px, so keep inputs at 16px. */
+input, select, textarea {
+  font-size: 16px;
+}
+
+select {
+  appearance: none;
+}
+
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
 }
