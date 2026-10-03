@@ -7,7 +7,7 @@ import { BackIcon, ChevronIcon } from "./icons";
 
 /* ---------- Page shell ---------- */
 
-export function Page({ title, back, action, children }: { title: string; back?: boolean | string; action?: ReactNode; children: ReactNode }) {
+export function Page({ title, back, action, children }: { title: ReactNode; back?: boolean | string; action?: ReactNode; children: ReactNode }) {
   const router = useRouter();
   return (
     <div className="mx-auto w-full max-w-xl">

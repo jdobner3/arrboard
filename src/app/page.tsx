@@ -6,12 +6,13 @@ import { act, useApi } from "@/lib/client";
 import type { Overview } from "@/lib/types";
 import { ActionButton, Card, Divided, ErrorNote, LinkRow, Loading, Page, Pill, Progress, SectionTitle } from "@/components/ui";
 import { PauseIcon, PlayIcon } from "@/components/icons";
+import { Wordmark } from "@/components/Brand";
 
 export default function Home() {
   const { data, error, mutate } = useApi<Overview>("/api/overview", { refreshInterval: 10000 });
 
   return (
-    <Page title="Arrboard">
+    <Page title={<Wordmark />}>
       {!data && error && <ErrorNote error={error} retry={() => mutate()} />}
       {!data && !error && <Loading rows={4} />}
       {data && (

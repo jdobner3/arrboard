@@ -81,7 +81,7 @@ export default function LibraryList() {
 
       {error && !data && <ErrorNote error={error} retry={() => mutate()} />}
       {isLoading && !data && <Loading rows={8} />}
-      {data && items.length === 0 && <Empty>Nothing matches.</Empty>}
+      {data && items.length === 0 && <Empty>No treasure matches that.</Empty>}
 
       {items.length > 0 && (
         <div className="divide-y divide-[var(--line)] overflow-hidden rounded-2xl bg-[var(--card)]">

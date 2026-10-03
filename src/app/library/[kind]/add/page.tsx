@@ -50,7 +50,7 @@ export default function Add() {
 
       {results.error && <ErrorNote error={results.error} retry={() => results.mutate()} />}
       {term && results.isLoading && <Loading rows={5} />}
-      {term && results.data?.length === 0 && <Empty>No results for “{term}”.</Empty>}
+      {term && results.data?.length === 0 && <Empty>No treasure found for “{term}”.</Empty>}
 
       <div className="space-y-2">
         {results.data?.map((r) => (

@@ -1,1 +1,28 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#11151f"/><rect x="12" y="14" width="12" height="36" rx="3" fill="#5b9cff"/><rect x="28" y="22" width="12" height="28" rx="3" fill="#34d399"/><rect x="44" y="30" width="8" height="20" rx="3" fill="#fbbf24"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#10151f"/>
+  <g transform="translate(32 33) scale(0.86) translate(-32 -35.5)">
+  <!-- crossbones -->
+  <g stroke="#ece4cf" stroke-width="4.5" stroke-linecap="round">
+    <path d="M15 41 49 58M49 41 15 58"/>
+  </g>
+  <g fill="#ece4cf">
+    <circle cx="13.5" cy="38.5" r="3"/><circle cx="16.5" cy="37.5" r="3"/>
+    <circle cx="50.5" cy="38.5" r="3"/><circle cx="47.5" cy="37.5" r="3"/>
+    <circle cx="13.5" cy="60" r="3"/><circle cx="16.5" cy="61" r="3"/>
+    <circle cx="50.5" cy="60" r="3"/><circle cx="47.5" cy="61" r="3"/>
+  </g>
+  <!-- skull -->
+  <ellipse cx="32" cy="27" rx="14" ry="13.5" fill="#ece4cf"/>
+  <rect x="24.5" y="34" width="15" height="11" rx="3.5" fill="#ece4cf"/>
+  <circle cx="26.5" cy="28" r="3.6" fill="#10151f"/>
+  <path d="M32 31.5 29.8 35h4.4z" fill="#10151f"/>
+  <path d="M29 39.5v5M32 39.5v5M35 39.5v5" stroke="#10151f" stroke-width="1.4"/>
+  <!-- eyepatch -->
+  <path d="M19.5 20.5 44 33" stroke="#10151f" stroke-width="1.6"/>
+  <ellipse cx="37.6" cy="28.3" rx="4.6" ry="4.2" fill="#10151f"/>
+  <!-- bandana -->
+  <path d="M17.6 25.5C17.6 13 25 10.5 32 10.5S46.4 13 46.4 25.5C40 20.6 24 20.6 17.6 25.5Z" fill="#d94a3d"/>
+  <circle cx="24" cy="16.5" r="1.1" fill="#f6d9a8"/><circle cx="31" cy="14.5" r="1.1" fill="#f6d9a8"/><circle cx="38.5" cy="16.2" r="1.1" fill="#f6d9a8"/>
+  <path d="M45 19.5 53 15.5 51 22.5ZM45.5 22 52.5 25.5 46.5 26.5Z" fill="#b83a2f"/>
+  </g>
+</svg>

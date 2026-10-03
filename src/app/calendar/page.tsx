@@ -33,7 +33,7 @@ export default function Calendar() {
       {error && !data && <ErrorNote error={error} retry={() => mutate()} />}
       {!data && !error && <Loading rows={6} />}
       {data?.errors.map((e) => <ErrorNote key={e} error={e} />)}
-      {data && byDay.length === 0 && <Empty>Nothing scheduled.</Empty>}
+      {data && byDay.length === 0 && <Empty>Nothin’ on the horizon, captain.</Empty>}
 
       {byDay.map(([day, entries]) => (
         <div key={day} className="space-y-2">

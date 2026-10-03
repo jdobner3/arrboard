@@ -45,7 +45,7 @@ export default function Downloads() {
 
           <SectionTitle>Queue</SectionTitle>
           {data.queue.length === 0 ? (
-            <Empty>Nothing downloading.</Empty>
+            <Empty>Calm seas. Nothin’ downloadin’.</Empty>
           ) : (
             <Card>
               <Divided>
@@ -56,7 +56,7 @@ export default function Downloads() {
 
           <SectionTitle>History</SectionTitle>
           {data.history.length === 0 ? (
-            <Empty>No history.</Empty>
+            <Empty>The log book is empty.</Empty>
           ) : (
             <Card>
               <Divided>

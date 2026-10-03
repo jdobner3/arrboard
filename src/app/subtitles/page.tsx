@@ -30,7 +30,7 @@ export default function Subtitles() {
             <SearchIcon className="h-4 w-4" /> Search all {data.total.toLocaleString()} missing
           </ActionButton>
           {data.items.length === 0 ? (
-            <Empty>No missing subtitles.</Empty>
+            <Empty>Every subtitle accounted for.</Empty>
           ) : (
             <Card>
               <Divided>

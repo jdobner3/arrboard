@@ -56,7 +56,7 @@ export default function Releases({ params, searchParams }: PageProps<"/library/[
         <Card className="flex items-center gap-3 p-4">
           <Spinner />
           <div className="text-sm">
-            <p className="font-medium">Searching indexers… {elapsed > 0 && `${elapsed}s`}</p>
+            <p className="font-medium">Searchin’ the seven seas… {elapsed > 0 && `${elapsed}s`}</p>
             <p className="text-[var(--muted)]">This can take a minute or two. You can leave and come back; the search keeps going.</p>
           </div>
         </Card>
@@ -68,7 +68,7 @@ export default function Releases({ params, searchParams }: PageProps<"/library/[
             {job.results.length} found · {approved.length} acceptable
           </p>
           {approved.length === 0 ? (
-            <Empty>No release meets your quality profile. Rejected ones are below.</Empty>
+            <Empty>No release meets your quality profile. The rejected ones are below, if ye dare.</Empty>
           ) : (
             <Card>
               <Divided>
@@ -122,7 +122,7 @@ function ReleaseRow({ r, kind }: { r: Release; kind: string }) {
         className="w-full"
         disabled={grabbed}
         confirm={r.approved ? undefined : "Tap again to grab anyway"}
-        done="Sent to SABnzbd"
+        done="Plunder sent to SABnzbd"
         run={async () => {
           await act(`/api/releases/${kind}/grab`, { guid: r.guid, indexerId: r.indexerId });
           setGrabbed(true);

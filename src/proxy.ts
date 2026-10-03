@@ -16,7 +16,7 @@ const jwks = team ? createRemoteJWKSet(new URL(`https://${team}/cdn-cgi/access/c
 
 function deny(req: NextRequest, reason: string) {
   console.warn(`[arrboard] blocked ${req.method} ${req.nextUrl.pathname}: ${reason}`);
-  const body = "Arrboard is only reachable through Cloudflare Access or on the home network.";
+  const body = "Arr! This ship only takes crew: sign in through Cloudflare Access or connect from the home network.";
   return req.nextUrl.pathname.startsWith("/api/")
     ? NextResponse.json({ error: body }, { status: 403 })
     : new NextResponse(body, { status: 403, headers: { "Content-Type": "text/plain; charset=utf-8" } });

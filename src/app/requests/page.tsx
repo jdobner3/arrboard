@@ -37,7 +37,7 @@ export default function Requests() {
       />
       {error && !data && <ErrorNote error={error} retry={() => mutate()} />}
       {!data && !error && <Loading rows={5} />}
-      {data && data.results.length === 0 && <Empty>{filter === "pending" ? "Nothing waiting for approval." : "No requests."}</Empty>}
+      {data && data.results.length === 0 && <Empty>{filter === "pending" ? "No landlubbers waitin’ for approval." : "No requests."}</Empty>}
 
       <div className="space-y-2">
         {data?.results.map((r) => {

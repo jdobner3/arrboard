@@ -23,7 +23,7 @@ export default function Indexers() {
     <Page title="Indexers" back="/more">
       {error && !data && <ErrorNote error={error} retry={() => mutate()} />}
       {!data && !error && <Loading rows={3} />}
-      {data && data.length === 0 && <Empty>No indexers in Prowlarr.</Empty>}
+      {data && data.length === 0 && <Empty>No indexers in Prowlarr. No maps, no treasure.</Empty>}
       {data && data.length > 0 && (
         <>
           <ActionButton tone="primary" className="w-full" done="All indexers passed" run={() => test()}>Test all</ActionButton>
