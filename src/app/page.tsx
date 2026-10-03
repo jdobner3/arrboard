@@ -97,9 +97,34 @@ function Downloads({ d, refresh }: { d: Overview["downloads"]; refresh: () => vo
 function Issues({ issues, refresh }: { issues: Overview["issues"]; refresh: () => void }) {
   const [all, setAll] = useState(false);
   const shown = all ? issues : issues.slice(0, 3);
+  const byService = (["lidarr", "sonarr", "radarr"] as const)
+    .map((s) => ({ service: s, ids: issues.filter((i) => i.service === s).map((i) => i.id) }))
+    .filter((g) => g.ids.length > 1);
+  const clear = async (service: string, ids: number[], blocklist: boolean) => {
+    await act("/api/queue", { service, ids, blocklist });
+    refresh();
+  };
   return (
     <>
       <SectionTitle right={<Pill tone="warn">{issues.length}</Pill>}>Needs attention</SectionTitle>
+      {byService.length > 0 && (
+        <Card className="space-y-2 p-4">
+          <p className="text-sm text-[var(--muted)]">
+            Clear in bulk. This removes the downloads from SABnzbd too. Blocklisting also makes the app look for a different release.
+          </p>
+          {byService.map((g) => (
+            <div key={g.service} className="flex items-center gap-2">
+              <span className="min-w-0 flex-1 text-sm font-medium capitalize">{g.service} · {g.ids.length}</span>
+              <ActionButton confirm={`Remove ${g.ids.length}?`} done={`Removed ${g.ids.length}`} run={() => clear(g.service, g.ids, false)}>
+                Remove all
+              </ActionButton>
+              <ActionButton confirm={`Blocklist ${g.ids.length}?`} done={`Blocklisted ${g.ids.length}, searching`} run={() => clear(g.service, g.ids, true)}>
+                Blocklist all
+              </ActionButton>
+            </div>
+          ))}
+        </Card>
+      )}
       <Card>
         <Divided>
           {shown.map((i) => (
@@ -115,7 +140,7 @@ function Issues({ issues, refresh }: { issues: Overview["issues"]; refresh: () =
                 <ActionButton
                   confirm="Tap to remove"
                   run={async () => {
-                    await act("/api/queue", { service: i.service, id: i.id, blocklist: false });
+                    await act("/api/queue", { service: i.service, ids: [i.id], blocklist: false });
                     refresh();
                   }}
                   done="Removed from queue"
@@ -125,7 +150,7 @@ function Issues({ issues, refresh }: { issues: Overview["issues"]; refresh: () =
                 <ActionButton
                   confirm="Tap to blocklist"
                   run={async () => {
-                    await act("/api/queue", { service: i.service, id: i.id, blocklist: true });
+                    await act("/api/queue", { service: i.service, ids: [i.id], blocklist: true });
                     refresh();
                   }}
                   done="Blocklisted, searching again"

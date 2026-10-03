@@ -6,7 +6,7 @@ A phone-first web app for running the media apps on Homer (Unraid): Sonarr, Rada
 
 - Next.js (App Router) app. The server side holds every API key and talks to the apps over the LAN; the browser only ever calls Arrboard's own `/api/*` routes.
 - Posters are relayed through `/api/image/...` from each app's `mediacover` API, so they load from Homer instead of the public artwork sites.
-- There is no login in the app itself. **Only publish it behind Cloudflare Access** (or keep it LAN/Tailscale only).
+- There is no login in the app itself. `src/proxy.ts` is the lock: opened directly on the container port (LAN/Tailscale) it works; any request that came through Nginx Proxy Manager or Cloudflare must carry a valid Cloudflare Access token for this app (`CF_ACCESS_TEAM_DOMAIN` + `CF_ACCESS_AUD`), or it gets a 403.
 
 ## Screens
 

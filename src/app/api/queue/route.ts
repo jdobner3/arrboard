@@ -1,11 +1,13 @@
 import { handle, BadRequest } from "@/lib/server/services";
-import { removeQueueItem } from "@/lib/server/ops";
+import { removeQueueItems } from "@/lib/server/ops";
 
-// Remove a stuck item from a Sonarr/Radarr/Lidarr queue, optionally blocklisting it so a new release is searched.
+// Remove stuck items from a Sonarr/Radarr/Lidarr queue: { service, ids: number[], blocklist }.
+// Blocklisting makes the app search for a different release.
 export async function POST(req: Request) {
   return handle(async () => {
-    const { service, id, blocklist } = await req.json();
-    if (!["sonarr", "radarr", "lidarr"].includes(service) || !Number.isInteger(id)) throw new BadRequest("Bad request");
-    return removeQueueItem(service, id, Boolean(blocklist));
+    const { service, ids, blocklist } = await req.json();
+    if (!["sonarr", "radarr", "lidarr"].includes(service)) throw new BadRequest("Bad service");
+    if (!Array.isArray(ids) || ids.length === 0 || ids.length > 500 || !ids.every(Number.isInteger)) throw new BadRequest("Bad ids");
+    return removeQueueItems(service, ids, Boolean(blocklist));
   });
 }

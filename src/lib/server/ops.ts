@@ -80,9 +80,12 @@ async function importIssues(service: ArrKind): Promise<ImportIssue[]> {
     }));
 }
 
-export async function removeQueueItem(service: ArrKind, id: number, blocklist: boolean) {
+/** Removes queue items (and their download from SABnzbd). With blocklist, the app also searches for a different release. */
+export async function removeQueueItems(service: ArrKind, ids: number[], blocklist: boolean) {
   const qs = `removeFromClient=true&blocklist=${blocklist}&skipRedownload=${!blocklist}`;
-  return arr(service, `/queue/${id}?${qs}`, "DELETE");
+  if (ids.length === 1) await arr(service, `/queue/${ids[0]}?${qs}`, "DELETE");
+  else await arr(service, `/queue/bulk?${qs}`, "DELETE", { ids }, 60_000);
+  return { ok: true, removed: ids.length };
 }
 
 /* ---------- Home ---------- */
