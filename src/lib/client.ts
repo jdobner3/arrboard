@@ -21,6 +21,11 @@ export async function act<T = unknown>(url: string, body: unknown): Promise<T> {
   return data as T;
 }
 
+/** Link to the release picker. target: movie-<id> | season-<seriesId>-<n> | episode-<id> | album-<id> */
+export function releasesHref(kind: string, id: number | string, target: string, label: string, from: string) {
+  return `/library/${kind}/${id}/releases/${target}?${new URLSearchParams({ label, from })}`;
+}
+
 export function relativeDay(iso: string) {
   const d = new Date(iso);
   const today = new Date();

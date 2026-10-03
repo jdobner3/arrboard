@@ -1,6 +1,6 @@
 import "server-only";
 import { arr, cached, invalidate, BadRequest, type ArrKind } from "./services";
-import type { AddOptions, DetailGroup, LibraryDetail, LibraryItem, LibraryKind, LookupResult } from "../types";
+import type { AddOptions, DetailGroup, LibraryDetail, LibraryItem, LibraryKind, LookupResult, SeasonDetail } from "../types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Any = any;
@@ -161,7 +161,9 @@ export type DetailAction =
   | { action: "search" }
   | { action: "searchGroup"; groupId: number }
   | { action: "monitor"; monitored: boolean }
-  | { action: "monitorGroup"; groupId: number; monitored: boolean };
+  | { action: "monitorGroup"; groupId: number; monitored: boolean }
+  | { action: "searchEpisode"; episodeId: number }
+  | { action: "monitorEpisode"; episodeId: number; monitored: boolean };
 
 export async function runAction(kind: LibraryKind, id: number, a: DetailAction) {
   const service = SERVICE[kind];
@@ -169,35 +171,77 @@ export async function runAction(kind: LibraryKind, id: number, a: DetailAction) 
     invalidate(`lib:${kind}`);
     return r;
   };
+  const command = async (body: object) => {
+    await arr(service, "/command", "POST", body);
+    return { ok: true };
+  };
   switch (a.action) {
-    case "search": {
-      const body =
+    case "search":
+      return command(
         kind === "shows" ? { name: "SeriesSearch", seriesId: id }
         : kind === "movies" ? { name: "MoviesSearch", movieIds: [id] }
-        : { name: "ArtistSearch", artistId: id };
-      return arr(service, "/command", "POST", body);
-    }
-    case "searchGroup": {
-      if (kind === "shows") return arr(service, "/command", "POST", { name: "SeasonSearch", seriesId: id, seasonNumber: a.groupId });
-      if (kind === "music") return arr(service, "/command", "POST", { name: "AlbumSearch", albumIds: [a.groupId] });
+        : { name: "ArtistSearch", artistId: id },
+      );
+    case "searchGroup":
+      if (kind === "shows") return command({ name: "SeasonSearch", seriesId: id, seasonNumber: a.groupId });
+      if (kind === "music") return command({ name: "AlbumSearch", albumIds: [a.groupId] });
       throw new BadRequest("Movies have no groups");
-    }
+    case "searchEpisode":
+      if (kind !== "shows") throw new BadRequest("Only shows have episodes");
+      return command({ name: "EpisodeSearch", episodeIds: [a.episodeId] });
     case "monitor": {
       const x = await arr<Any>(service, `${ENTITY[kind]}/${id}`);
-      { await arr(service, `${ENTITY[kind]}/${id}`, "PUT", { ...x, monitored: a.monitored }); return done({ ok: true }); }
+      await arr(service, `${ENTITY[kind]}/${id}`, "PUT", { ...x, monitored: a.monitored });
+      return done({ ok: true });
     }
-    case "monitorGroup": {
+    case "monitorGroup":
       if (kind === "shows") {
         const x = await arr<Any>(service, `/series/${id}`);
         const seasons = x.seasons.map((s: Any) => (s.seasonNumber === a.groupId ? { ...s, monitored: a.monitored } : s));
-        { await arr(service, `/series/${id}`, "PUT", { ...x, seasons }); return done({ ok: true }); }
+        await arr(service, `/series/${id}`, "PUT", { ...x, seasons });
+        return done({ ok: true });
       }
-      if (kind === "music") { await arr(service, "/album/monitor", "PUT", { albumIds: [a.groupId], monitored: a.monitored }); return done({ ok: true }); }
+      if (kind === "music") {
+        await arr(service, "/album/monitor", "PUT", { albumIds: [a.groupId], monitored: a.monitored });
+        return done({ ok: true });
+      }
       throw new BadRequest("Movies have no groups");
-    }
+    case "monitorEpisode":
+      if (kind !== "shows") throw new BadRequest("Only shows have episodes");
+      await arr(service, "/episode/monitor", "PUT", { episodeIds: [a.episodeId], monitored: a.monitored });
+      return done({ ok: true });
     default:
       throw new BadRequest("Unknown action");
   }
+}
+
+export async function getSeason(seriesId: number, season: number): Promise<SeasonDetail> {
+  const [series, episodes] = await Promise.all([
+    arr<Any>("sonarr", `/series/${seriesId}`),
+    arr<Any[]>("sonarr", `/episode?seriesId=${seriesId}&seasonNumber=${season}&includeEpisodeFile=true`),
+  ]);
+  const s = series.seasons?.find((x: Any) => x.seasonNumber === season);
+  if (!s) throw new BadRequest("No such season");
+  const now = Date.now();
+  return {
+    seriesId,
+    seriesTitle: series.title,
+    season,
+    monitored: s.monitored,
+    episodes: episodes
+      .sort((a, b) => b.episodeNumber - a.episodeNumber)
+      .map((e) => ({
+        id: e.id,
+        number: e.episodeNumber,
+        title: e.title ?? "TBA",
+        airDate: e.airDateUtc,
+        aired: Boolean(e.airDateUtc) && new Date(e.airDateUtc).getTime() <= now,
+        monitored: e.monitored,
+        hasFile: e.hasFile,
+        quality: e.episodeFile?.quality?.quality?.name,
+        size: e.episodeFile?.size,
+      })),
+  };
 }
 
 /* ---------- Search & add ---------- */

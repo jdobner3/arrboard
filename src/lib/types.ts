@@ -153,6 +153,52 @@ export interface Indexer {
   failing?: { until?: string; since?: string };
 }
 
+export interface Release {
+  guid: string;
+  indexerId: number;
+  title: string;
+  quality: string;
+  size: number;
+  age: string;
+  indexer: string;
+  protocol: string;
+  seeders?: number;
+  approved: boolean;
+  rejections: string[];
+  score: number;
+  languages: string[];
+  fullSeason?: boolean;
+  weight: number;
+}
+
+export interface ReleaseJob {
+  id: string;
+  status: "running" | "done" | "error";
+  startedAt: string;
+  results: Release[];
+  error?: string;
+}
+
+export interface Episode {
+  id: number;
+  number: number;
+  title: string;
+  airDate?: string;
+  aired: boolean;
+  monitored: boolean;
+  hasFile: boolean;
+  quality?: string;
+  size?: number;
+}
+
+export interface SeasonDetail {
+  seriesId: number;
+  seriesTitle: string;
+  season: number;
+  monitored: boolean;
+  episodes: Episode[];
+}
+
 export interface WantedSub {
   key: string;
   kind: "episode" | "movie";
